@@ -1,0 +1,38 @@
+:root {
+  --bg: #0f1226;
+  --surface: #1a1f3d;
+  --surface-2: #232a52;
+  --text: #e8eaf6;
+  --muted: #9aa0c3;
+  --accent: #5b8cff;
+  --accent-2: #00d4a0;
+  --danger: #ff6b6b;
+  --radius: 12px;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: "Pretendard", system-ui, -apple-system, "Malgun Gothic", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+}
+.app-header { text-align: center; padding: 20px 16px 8px; }
+.app-header h1 { margin: 0; font-size: 1.6rem; }
+.tagline { margin: 4px 0 0; color: var(--muted); font-size: 0.9rem; }
+.tabbar {
+  display: flex; gap: 6px; padding: 10px 12px;
+  position: sticky; top: 0; background: var(--bg); z-index: 10;
+  border-bottom: 1px solid var(--surface-2);
+}
+.tab-btn {
+  flex: 1; min-height: 44px; border: none; border-radius: var(--radius);
+  background: var(--surface); color: var(--muted);
+  font-size: 0.9rem; cursor: pointer; transition: background .2s, color .2s;
+}
+.tab-btn.active { background: var(--accent); color: #fff; font-weight: 600; }
+main { padding: 16px; max-width: 960px; margin: 0 auto; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+h2 { font-size: 1.2rem; margin-top: 0; }
+button { font-family: inherit; }

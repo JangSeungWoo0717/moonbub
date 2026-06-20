@@ -1,0 +1,10 @@
+{
+  "name": "arguquest",
+  "version": "1.0.0",
+  "description": "논리 퀘스트 - 논증 트레이닝 게임",
+  "type": "module",
+  "scripts": {
+    "test": "node --test"
+  },
+  "license": "MIT"
+}
