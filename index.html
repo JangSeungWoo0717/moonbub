@@ -22,10 +22,80 @@
   </nav>
 
   <main>
-    <section id="input" class="tab-panel active" role="tabpanel"><h2>논증 입력</h2></section>
-    <section id="analysis" class="tab-panel" role="tabpanel"><h2>분석 결과</h2></section>
-    <section id="growth" class="tab-panel" role="tabpanel"><h2>성장 기록</h2></section>
-    <section id="method" class="tab-panel" role="tabpanel"><h2>방법론</h2></section>
+    <section id="input" class="tab-panel active" role="tabpanel">
+      <h2>✍️ 논증 입력</h2>
+      <form id="arg-form" class="arg-form">
+        <label>제목(주제)
+          <input type="text" id="f-title" placeholder="예: 사형제 폐지 - 초안" />
+        </label>
+        <label>주장 (Claim)
+          <textarea id="f-claim" rows="2" placeholder="당신의 핵심 주장"></textarea>
+        </label>
+        <div id="grounds-wrap">
+          <span class="field-label">근거 (Grounds)</span>
+          <div class="ground-row">
+            <textarea class="f-ground" rows="2" placeholder="근거 1 (수치·출처를 담으면 좋아요)"></textarea>
+          </div>
+        </div>
+        <button type="button" id="add-ground" class="btn-ghost">＋ 근거 추가</button>
+        <label>전제·보강 (Warrant)
+          <textarea id="f-warrant" rows="2" placeholder="주장과 근거를 잇는 이유"></textarea>
+        </label>
+        <label>한정 (Qualifier)
+          <input type="text" id="f-qualifier" placeholder="예: 대체로, 특정 조건에서" />
+        </label>
+        <label>반례·반론 (Rebuttal)
+          <textarea id="f-rebuttal" rows="2" placeholder="예상 반론과 그에 대한 대응"></textarea>
+        </label>
+        <div class="form-actions">
+          <button type="button" id="load-sample" class="btn-ghost">예시 불러오기</button>
+          <button type="submit" id="analyze-btn" class="btn-primary">분석하기 🚀</button>
+        </div>
+      </form>
+      <div id="quest-panel" class="quest-panel" hidden></div>
+    </section>
+
+    <section id="analysis" class="tab-panel" role="tabpanel">
+      <h2>📊 분석 결과</h2>
+      <div id="rank-banner" class="rank-banner"></div>
+      <div class="score-gauge"><div id="gauge-fill" class="gauge-fill"></div>
+        <span id="gauge-text" class="gauge-text">0</span></div>
+      <div id="badges" class="badges"></div>
+      <div class="chart-box"><canvas id="radar-canvas"></canvas></div>
+      <h3>논증 구조</h3>
+      <div id="tree-container"></div>
+      <h3>논리 오류 점검</h3>
+      <div id="fallacy-list" class="fallacy-list"></div>
+      <button type="button" id="save-btn" class="btn-primary">이 버전 저장 💾</button>
+    </section>
+
+    <section id="growth" class="tab-panel" role="tabpanel">
+      <h2>📈 성장 기록</h2>
+      <div id="profile-summary" class="rank-banner"></div>
+      <div class="chart-box"><canvas id="growth-canvas"></canvas></div>
+      <h3>저장된 버전</h3>
+      <ul id="version-list" class="version-list"></ul>
+      <button type="button" id="clear-btn" class="btn-ghost">전체 기록 삭제</button>
+    </section>
+
+    <section id="method" class="tab-panel" role="tabpanel">
+      <h2>📖 방법론</h2>
+      <h3>1. 툴민(Toulmin) 논증 모델</h3>
+      <p>주장(Claim)·근거(Grounds)·전제(Warrant)·한정(Qualifier)·반론(Rebuttal)으로
+        논증을 분해해 논리 구조를 점검합니다. 이것이 ‘논리적으로 소통하는 힘’의 뼈대입니다.</p>
+      <h3>2. 점수 산정 기준 (직접 설계한 KPI)</h3>
+      <ul>
+        <li>근거 충분성 — 근거 개수와 수치·출처 등 구체성</li>
+        <li>논리 연결성 — 주장과 근거를 잇는 전제의 충실도</li>
+        <li>반론 대응력 — 반론 제시와 반박 표현</li>
+        <li>주장 명료성 — 길이 적절성과 모호어 배제</li>
+        <li>오류 청결도 — 논리적 오류 감점</li>
+      </ul>
+      <h3>3. 게임 설계 관점</h3>
+      <p>점수→랭크/레벨, 조건 달성→배지, 약점→퀘스트로 이어지는 <strong>피드백 루프</strong>를
+        직접 설계했습니다. 참여 동기를 끌어올리도록 점수를 밸런싱하고, MDA(메커닉–다이내믹–
+        에스테틱) 관점으로 ‘학습을 플레이로 바꾸는’ 경험을 기획했습니다.</p>
+    </section>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>

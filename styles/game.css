@@ -1,0 +1,38 @@
+.rank-banner {
+  text-align: center; font-size: 1.3rem; font-weight: 800; padding: 12px;
+  border-radius: var(--radius); background: var(--surface-2); margin-bottom: 12px;
+}
+.score-gauge {
+  position: relative; height: 28px; background: var(--surface-2);
+  border-radius: 999px; overflow: hidden; margin-bottom: 12px;
+}
+.gauge-fill {
+  height: 100%; width: 0%; border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  transition: width 0.8s ease;
+}
+.gauge-text {
+  position: absolute; inset: 0; display: flex; align-items: center;
+  justify-content: center; font-weight: 700; color: #fff;
+}
+.badges { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.badge {
+  background: var(--surface-2); padding: 6px 10px; border-radius: 999px;
+  font-size: 0.85rem; animation: pop .4s ease;
+}
+@keyframes pop { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.chart-box { position: relative; height: 280px; margin: 12px 0; }
+.tree-node { background: var(--surface-2); border-radius: var(--radius); padding: 10px; margin: 6px 0; }
+.tree-node--claim { border: 2px solid var(--accent); }
+.tree-label { display: block; font-size: 0.75rem; color: var(--muted); }
+.tree-value { font-weight: 600; }
+.tree-branches { padding-left: 16px; border-left: 2px dashed var(--surface-2); }
+.fallacy-list { display: flex; flex-direction: column; gap: 8px; }
+.fallacy-item {
+  background: rgba(255,107,107,0.12); border: 1px solid var(--danger);
+  border-radius: var(--radius); padding: 10px;
+}
+.fallacy-item.clean { background: rgba(0,212,160,0.12); border-color: var(--accent-2); }
+.quest-panel { margin-top: 16px; background: var(--surface-2); border-radius: var(--radius); padding: 12px; }
+.quest-panel h3 { margin: 0 0 8px; }
+.quest-panel li { margin: 4px 0; }
