@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { loadProgress, saveProgress, recordClear, clearProgress } from "../js/storage.js";
+import { loadProgress, recordClear, setSound, clearProgress } from "../js/storage.js";
 
 function makeStore() {
   const m = new Map();
@@ -11,32 +11,34 @@ function makeStore() {
   };
 }
 
-test("빈 저장소는 cleared 빈 객체", () => {
-  assert.deepEqual(loadProgress(makeStore()), { cleared: {} });
+test("빈 저장소 기본값", () => {
+  const p = loadProgress(makeStore());
+  assert.deepEqual(p.cleared, {});
+  assert.equal(p.soundOn, true);
 });
 
-test("recordClear: 별점 저장 및 조회", () => {
-  const s = makeStore();
-  recordClear(1, 2, s);
-  assert.equal(loadProgress(s).cleared[1], 2);
-});
-
-test("recordClear: 더 낮은 별점은 무시(최고 유지)", () => {
+test("recordClear: 별점 저장·최고 유지", () => {
   const s = makeStore();
   recordClear(1, 3, s);
   recordClear(1, 1, s);
   assert.equal(loadProgress(s).cleared[1], 3);
 });
 
-test("손상된 JSON은 기본값으로 복구", () => {
+test("setSound: 사운드 토글 저장", () => {
   const s = makeStore();
-  s.setItem("parabola_progress", "{broken");
-  assert.deepEqual(loadProgress(s), { cleared: {} });
+  setSound(false, s);
+  assert.equal(loadProgress(s).soundOn, false);
 });
 
-test("clearProgress 후 초기화", () => {
+test("손상된 JSON 복구", () => {
+  const s = makeStore();
+  s.setItem("parabola_progress", "{broken");
+  assert.deepEqual(loadProgress(s).cleared, {});
+});
+
+test("clearProgress 초기화", () => {
   const s = makeStore();
   recordClear(2, 3, s);
   clearProgress(s);
-  assert.deepEqual(loadProgress(s), { cleared: {} });
+  assert.deepEqual(loadProgress(s).cleared, {});
 });

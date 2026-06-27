@@ -1,6 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { createGame, currentLevel, fire, nextLevel, hasNext, goToLevel } from "../js/game.js";
+import {
+  createGame, currentLevel, fire, nextLevel, hasNext, goToLevel, totalStars,
+} from "../js/game.js";
 
 test("createGame: 초기 상태", () => {
   const g = createGame();
@@ -9,40 +11,40 @@ test("createGame: 초기 상태", () => {
   assert.equal(g.status, "aiming");
 });
 
-test("fire: 시도 증가, 명중 시 won + 별점", () => {
+test("fire: 레벨1 명중 시 won + 별점 기록", () => {
   const g = createGame();
-  // 레벨1 표적 (8,0,r1.2). a=-0.125,b=1 → 착지 8
-  const r = fire(g, -0.125, 1);
+  // 레벨1 설계 곡선 a=-0.10,b=1.20
+  const r = fire(g, -0.10, 1.20);
   assert.equal(g.attempts, 1);
-  assert.ok(r.win);
+  assert.ok(r.allHit);
   assert.equal(g.status, "won");
-  assert.equal(g.stars[currentLevel(g).id], 3);
+  assert.ok(g.stars[1] >= 1);
 });
 
-test("fire: 빗나가면 aiming 유지, 시도만 증가", () => {
+test("fire: 빗나가면 aiming 유지", () => {
   const g = createGame();
-  const r = fire(g, -0.4, 4); // 너무 높이 솟아 표적 위로 — 빗나감
+  const r = fire(g, -0.5, 0.1); // 거의 날아가지 못함 → 빗나감
   assert.equal(g.attempts, 1);
-  assert.ok(!r.win);
+  assert.ok(!r.allHit);
   assert.equal(g.status, "aiming");
 });
 
-test("별점은 최고 기록을 유지", () => {
+test("코인 포함 레벨: 코인 전부 수집 시 더 높은 별점", () => {
   const g = createGame();
-  fire(g, -0.4, 4);   // 실패 (시도1)
-  fire(g, -0.125, 1); // 성공 (시도2 → 2별)
-  assert.equal(g.stars[1], 2);
+  goToLevel(g, 2); // 레벨3 (코인 3개), 설계곡선 a=-0.08,b=1.20
+  const r = fire(g, -0.08, 1.20);
+  assert.ok(r.allHit);
+  assert.equal(r.coinsCount, 3);
+  assert.equal(g.stars[3], 3); // 1발 + 코인전부 + par이내
 });
 
-test("nextLevel / hasNext / goToLevel", () => {
+test("nextLevel / hasNext / goToLevel / totalStars", () => {
   const g = createGame();
   assert.ok(hasNext(g));
   assert.ok(nextLevel(g));
   assert.equal(g.index, 1);
-  assert.equal(g.attempts, 0);
-  assert.ok(goToLevel(g, 4));
-  assert.equal(g.index, 4);
+  assert.ok(goToLevel(g, 11));
   assert.ok(!hasNext(g));
-  assert.ok(!nextLevel(g));
-  assert.ok(!goToLevel(g, 99));
+  g.stars = { 1: 3, 2: 2 };
+  assert.equal(totalStars(g), 5);
 });

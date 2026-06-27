@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <title>포물선 슈터 — 이차함수 조준 게임</title>
   <link rel="stylesheet" href="styles/main.css" />
   <link rel="stylesheet" href="styles/game.css" />
@@ -16,27 +16,32 @@
 
   <main class="game">
     <div class="hud">
-      <span id="hud-level" class="hud-item">레벨 1</span>
+      <span id="hud-level" class="hud-item">LV 1/12</span>
       <span id="hud-attempts" class="hud-item">시도 0</span>
-      <span id="hud-stars" class="hud-item">⭐⭐⭐</span>
+      <span id="hud-stars" class="hud-item">☆☆☆</span>
+      <span id="hud-total" class="hud-item">총 ⭐0</span>
+      <button id="sound-btn" class="hud-item hud-btn" type="button" aria-label="사운드">🔊</button>
     </div>
 
-    <div class="equation" id="equation">y = a·x² + b·x</div>
+    <div class="equation" id="equation">y = ax² + bx</div>
     <div class="math-info" id="math-info"></div>
 
     <div class="canvas-wrap">
-      <canvas id="game-canvas" width="640" height="384"></canvas>
+      <canvas id="game-canvas" width="728" height="420"></canvas>
       <div id="overlay" class="overlay" hidden></div>
     </div>
 
+    <p id="goals" class="goals"></p>
+    <p id="hint" class="hint"></p>
+
     <div class="controls">
-      <label>a (휘어짐·방향) <span id="a-val" class="ctrl-val">-0.12</span>
+      <p class="drag-tip">💡 캔버스를 <b>드래그</b>해 조준하거나, 아래 슬라이더로 미세 조정하세요.</p>
+      <label>a (휘어짐·방향) <span id="a-val" class="ctrl-val"></span>
         <input type="range" id="a-slider" />
       </label>
-      <label>b (발사 세기) <span id="b-val" class="ctrl-val">1.0</span>
+      <label>b (발사 세기·각도) <span id="b-val" class="ctrl-val"></span>
         <input type="range" id="b-slider" />
       </label>
-      <p id="hint" class="hint"></p>
       <div class="btn-row">
         <button type="button" id="levels-btn" class="btn-ghost">레벨 선택</button>
         <button type="button" id="fire-btn" class="btn-primary">발사! 🚀</button>
@@ -45,18 +50,17 @@
     </div>
 
     <details class="method">
-      <summary>📖 이게 왜 수학인가요? (이차함수 이야기)</summary>
-      <p><strong>궤적은 이차함수 <code>y = a·x² + b·x</code></strong>입니다. 상수항이 0이라
-        항상 발사대(원점)에서 출발하죠.</p>
+      <summary>📖 이게 왜 수학인가요? (물리 × 이차함수)</summary>
+      <p>대포를 드래그하면 발사 속도 <code>(v<sub>x</sub>, v<sub>y</sub>)</code>가 정해지고,
+        중력 <code>g</code> 아래 공의 궤적은 <strong>이차함수</strong>가 됩니다:</p>
+      <p style="text-align:center"><code>y = -(g / 2v<sub>x</sub>²)·x² + (v<sub>y</sub>/v<sub>x</sub>)·x</code></p>
       <ul>
-        <li><strong>a</strong>: 부호가 음수면 위로 솟았다 떨어지는 아치, 절댓값이 클수록 좁고 가파른 곡선.</li>
-        <li><strong>b</strong>: 발사 기울기. 클수록 더 멀리·높이 날아갑니다.</li>
-        <li><strong>꼭짓점</strong>: <code>x = -b/2a</code> — 포물선의 최고점(대칭축).</li>
-        <li><strong>착지점(x절편)</strong>: <code>x = -b/a</code> — 공이 땅에 닿는 곳.</li>
+        <li><strong>a = -g/2v<sub>x</sub>²</strong>: 항상 음수(아래로 열림), 빠를수록 완만한 곡선.</li>
+        <li><strong>b = v<sub>y</sub>/v<sub>x</sub></strong>: 발사 기울기(각도). 클수록 가파르게 솟아요.</li>
+        <li><strong>꼭짓점</strong> <code>x = -b/2a</code> · <strong>착지점</strong> <code>x = -b/a</code>.</li>
       </ul>
-      <p>표적을 맞히려면 이 계수들이 곡선을 어떻게 바꾸는지 이해해야 합니다. 즉,
-        <strong>이차함수의 성질로 조준</strong>하는 게임입니다. — 게임 물리·레벨 디자인을
-        직접 설계한 수학 탐구 산출물.</p>
+      <p>여러 표적과 코인이 <em>하나의 포물선</em> 위에 놓이도록 계수를 조절하는 것이 핵심.
+        이차함수의 성질로 조준하는, 게임 물리·레벨 디자인을 직접 설계한 수학 탐구 산출물입니다.</p>
     </details>
   </main>
 

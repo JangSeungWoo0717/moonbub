@@ -4,21 +4,27 @@ export function trajectoryY(a, b, x) {
   return a * x * x + b * x;
 }
 
-// 꼭짓점: x = -b/(2a), y = 그 지점의 높이
+// 꼭짓점: x = -b/(2a)
 export function vertex(a, b) {
-  if (a === 0) return null; // 직선 — 꼭짓점 없음
+  if (a === 0) return null;
   const x = -b / (2 * a);
   return { x, y: trajectoryY(a, b, x) };
 }
 
-// 착지점(두 번째 x절편): a·x²+b·x=0 → x=0 또는 x=-b/a. 아치(a<0,b>0)일 때만 유효.
+// 착지점(두 번째 x절편): a<0,b>0 일 때 -b/a
 export function landingX(a, b) {
   if (a >= 0 || b <= 0) return null;
   return -b / a;
 }
 
-// 궤적 표본점 [{x,y}] — x=0부터 착지점(또는 xMax)까지
-export function samplePath(a, b, xMax, step = 0.5) {
+// 발사 벡터(vx,vy)와 중력 g → 이차함수 계수. y = (vy/vx)x - (g/2vx²)x²
+export function velocityToCoeffs(vx, vy, g) {
+  const safeVx = Math.max(vx, 0.001);
+  return { a: -g / (2 * safeVx * safeVx), b: vy / safeVx };
+}
+
+// 궤적 표본점 [{x,y}] — 원점부터 착지점(또는 xMax)까지
+export function samplePath(a, b, xMax, step = 0.4) {
   const land = landingX(a, b);
   const end = land != null ? Math.min(land, xMax) : xMax;
   const points = [];
@@ -29,26 +35,36 @@ export function samplePath(a, b, xMax, step = 0.5) {
   return points;
 }
 
-// 표적 명중: 표본점 중 하나라도 표적 중심에서 반경 r 이내
-export function hitsTarget(points, target) {
-  return points.some((pt) => {
-    const dx = pt.x - target.x;
-    const dy = pt.y - target.y;
-    return Math.hypot(dx, dy) <= target.r;
-  });
+// 표본점 중 하나라도 원 {x,y,r} 안을 지나는 첫 인덱스 (없으면 -1)
+export function firstHitIndex(points, c) {
+  for (let i = 0; i < points.length; i += 1) {
+    if (Math.hypot(points[i].x - c.x, points[i].y - c.y) <= c.r) return i;
+  }
+  return -1;
 }
 
-// 장애물 충돌: 표본점이 사각형 {x, w, bottom, top} 내부를 지나면 true
+export function hitsCircle(points, c) {
+  return firstHitIndex(points, c) !== -1;
+}
+
+// 사각 장애물 {x,w,bottom,top} 내부를 지나면 true
 export function hitsObstacle(points, o) {
   return points.some(
     (pt) => pt.x >= o.x && pt.x <= o.x + o.w && pt.y >= o.bottom && pt.y <= o.top
   );
 }
 
-// 한 발 평가: 장애물에 막히지 않고 표적을 맞히면 승리
-export function evaluateShot(a, b, level, xMax, step = 0.5) {
+// 한 발 종합 평가: 다중 표적 + 코인 + 장애물
+export function evaluateShot(a, b, level, xMax, step = 0.4) {
   const points = samplePath(a, b, xMax, step);
   const blocked = (level.obstacles || []).some((o) => hitsObstacle(points, o));
-  const win = !blocked && hitsTarget(points, level.target);
-  return { win, blocked, points };
+  const targets = level.targets || [];
+  const coins = level.coins || [];
+  const hitTargets = targets.map((t) => !blocked && hitsCircle(points, t));
+  const coinsGot = coins.map((c) => !blocked && hitsCircle(points, c));
+  const allHit = !blocked && targets.length > 0 && hitTargets.every(Boolean);
+  return {
+    points, blocked, hitTargets, coinsGot, allHit,
+    coinsCount: coinsGot.filter(Boolean).length,
+  };
 }

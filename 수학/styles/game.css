@@ -1,6 +1,6 @@
 .canvas-wrap { position: relative; width: 100%; }
 #game-canvas {
-  width: 100%; height: auto; display: block;
+  width: 100%; height: auto; display: block; cursor: crosshair;
   background: var(--bg); border: 1px solid var(--surface-2); border-radius: var(--radius);
   touch-action: none;
 }
@@ -8,29 +8,32 @@
 .overlay {
   position: absolute; inset: 0; display: flex; flex-direction: column;
   align-items: center; justify-content: center; gap: 10px;
-  background: rgba(15,18,38,0.82); border-radius: var(--radius); text-align: center;
-  animation: fade .25s ease;
+  background: rgba(15,18,38,0.84); border-radius: var(--radius); text-align: center;
+  animation: fade .25s ease; padding: 16px;
 }
-@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
-.overlay h2 { margin: 0; font-size: 1.6rem; }
-.overlay .stars { font-size: 1.8rem; letter-spacing: 4px; }
-.overlay .msg { color: var(--muted); }
+@keyframes fade { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+.overlay h2 { margin: 0; font-size: 1.7rem; }
+.overlay .stars { font-size: 2rem; letter-spacing: 6px; animation: pop .5s ease; }
+@keyframes pop { from { transform: scale(0.3) rotate(-12deg); } to { transform: scale(1) rotate(0); } }
+.overlay .msg { color: var(--muted); margin: 0; }
+.overlay .btn-primary { flex: 0 0 auto; min-width: 180px; }
 
-.controls { margin-top: 12px; }
-.controls label { display: block; margin: 10px 0 2px; font-weight: 700; font-size: 0.9rem; }
+.controls { margin-top: 10px; }
+.drag-tip { color: var(--muted); font-size: 0.82rem; text-align: center; margin: 4px 0 8px; }
+.controls label { display: block; margin: 8px 0 2px; font-weight: 700; font-size: 0.88rem; }
 .ctrl-val { color: var(--accent-2); font-variant-numeric: tabular-nums; }
-input[type="range"] { width: 100%; accent-color: var(--accent); height: 32px; }
+input[type="range"] { width: 100%; accent-color: var(--accent); height: 34px; }
 
 .hint {
   color: var(--muted); font-size: 0.85rem; background: var(--surface);
-  border-left: 3px solid var(--accent); padding: 8px 10px; border-radius: var(--radius); margin: 10px 0;
+  border-left: 3px solid var(--accent); padding: 8px 10px; border-radius: var(--radius); margin: 4px 0 10px;
 }
-.btn-row { display: flex; gap: 10px; }
+.btn-row { display: flex; gap: 10px; margin-top: 4px; }
 
 .level-picker { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
 .level-chip {
-  min-width: 48px; min-height: 44px; border-radius: var(--radius); border: none; cursor: pointer;
-  background: var(--surface-2); color: var(--text); font-weight: 700;
+  min-width: 52px; min-height: 48px; border-radius: var(--radius); border: none; cursor: pointer;
+  background: var(--surface-2); color: var(--text); font-weight: 800; font-size: 1rem;
 }
-.level-chip .chip-stars { display: block; font-size: 0.7rem; color: var(--gold); }
+.level-chip .chip-stars { display: block; font-size: 0.66rem; color: var(--gold); }
 .level-chip.current { outline: 2px solid var(--accent); }
