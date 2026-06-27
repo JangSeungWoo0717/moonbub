@@ -109,13 +109,13 @@ export class Renderer {
     for (let y = 0; y <= WORLD.H; y += 2) {
       ctx.beginPath(); ctx.moveTo(this.X(0), this.Y(y)); ctx.lineTo(this.X(WORLD.W), this.Y(y)); ctx.stroke();
     }
-    // 잔디 땅
+    // 잔디 땅 (밝게)
     const grass = ctx.createLinearGradient(0, this.Y(0), 0, this.H);
-    grass.addColorStop(0, "#8ed455");
-    grass.addColorStop(1, "#5fa831");
+    grass.addColorStop(0, "#aef06a");
+    grass.addColorStop(1, "#86d846");
     ctx.fillStyle = grass;
     ctx.fillRect(-20, this.Y(0), this.W + 40, this.H - this.Y(0) + 20);
-    ctx.strokeStyle = "#3f8a22"; ctx.lineWidth = 3;
+    ctx.strokeStyle = "#5fb52e"; ctx.lineWidth = 3;
     ctx.beginPath(); ctx.moveTo(0, this.Y(0)); ctx.lineTo(this.W, this.Y(0)); ctx.stroke();
   }
 
@@ -134,11 +134,11 @@ export class Renderer {
     for (const o of this.level.obstacles) {
       const x = this.X(o.x), y = this.Y(o.top);
       const w = o.w * this.sx, h = (o.top - o.bottom) * this.sy;
-      ctx.fillStyle = "#9c7b54";
+      ctx.fillStyle = "#e0b878";
       this.roundRect(x, y, w, h, 4); ctx.fill();
-      ctx.strokeStyle = "#6f5536"; ctx.lineWidth = 2;
+      ctx.strokeStyle = "#b98a4e"; ctx.lineWidth = 2;
       this.roundRect(x, y, w, h, 4); ctx.stroke();
-      ctx.strokeStyle = "rgba(0,0,0,0.18)"; ctx.lineWidth = 1;
+      ctx.strokeStyle = "rgba(120,80,30,0.25)"; ctx.lineWidth = 1;
       for (let yy = y + 8; yy < y + h; yy += 9) {
         ctx.beginPath(); ctx.moveTo(x, yy); ctx.lineTo(x + w, yy); ctx.stroke();
       }
@@ -223,14 +223,14 @@ export class Renderer {
     ctx.save();
     ctx.translate(ox, oy);
     ctx.rotate(ang);
-    ctx.fillStyle = "#3b4a6b";
-    this.roundRect(-2, -7, 30, 14, 5); ctx.fill();
     ctx.fillStyle = "#5b8cff";
+    this.roundRect(-2, -7, 30, 14, 5); ctx.fill();
+    ctx.fillStyle = "#9ec0ff";
     this.roundRect(20, -7, 8, 14, 4); ctx.fill();
     ctx.restore();
-    ctx.fillStyle = "#2c3550";
+    ctx.fillStyle = "#4a78e0";
     ctx.beginPath(); ctx.arc(ox, oy, 12, Math.PI, 0); ctx.fill();
-    ctx.fillStyle = "#5b8cff";
+    ctx.fillStyle = "#ffce4a";
     ctx.beginPath(); ctx.arc(ox, oy, 7, 0, Math.PI * 2); ctx.fill();
   }
 
