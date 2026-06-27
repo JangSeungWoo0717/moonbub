@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>확률의 설계자 — 가챠 확률 실험실</title>
+  <link rel="stylesheet" href="styles/main.css" />
+  <link rel="stylesheet" href="styles/game.css" />
+  <link rel="stylesheet" href="styles/responsive.css" />
+</head>
+<body>
+  <header class="app-header">
+    <h1>🎲 확률의 설계자</h1>
+    <p class="tagline">가챠 확률을 수학으로 해부하라</p>
+    <a class="home-link" href="../">← 세특 모음으로</a>
+  </header>
+
+  <nav class="tabbar" role="tablist">
+    <button class="tab-btn active" data-tab="setup" role="tab">⚙️ 설정</button>
+    <button class="tab-btn" data-tab="analysis" role="tab">📊 분석</button>
+    <button class="tab-btn" data-tab="sim" role="tab">🎰 시뮬</button>
+    <button class="tab-btn" data-tab="method" role="tab">📖 방법론</button>
+  </nav>
+
+  <main>
+    <section id="setup" class="tab-panel active" role="tabpanel">
+      <h2>⚙️ 가챠 설정</h2>
+      <div id="rarity-list" class="rarity-list"></div>
+      <button type="button" id="add-rarity" class="btn-ghost">＋ 레어도 추가</button>
+      <label>분석 목표 레어도
+        <select id="f-target"></select>
+      </label>
+      <label>천장(pity) — 이 횟수 안에 목표 보장 (0 = 천장 없음)
+        <input type="number" id="f-pity" min="0" step="1" value="90" />
+      </label>
+      <label>1회 뽑기 비용 (선택, 0이면 생략)
+        <input type="number" id="f-cost" min="0" step="1" value="0" />
+      </label>
+      <div class="form-actions">
+        <button type="button" id="reset-btn" class="btn-ghost">기본값 복원</button>
+        <button type="button" id="analyze-btn" class="btn-primary">분석하기 🚀</button>
+      </div>
+    </section>
+
+    <section id="analysis" class="tab-panel" role="tabpanel">
+      <h2>📊 확률 분석</h2>
+      <div id="stat-cards" class="stat-cards"></div>
+      <h3>누적확률 곡선</h3>
+      <div class="chart-box"><canvas id="cumulative-canvas"></canvas></div>
+      <h3>분위별 필요 뽑기 수</h3>
+      <table class="quant-table">
+        <thead><tr><th>목표 확률</th><th>필요 뽑기 수</th></tr></thead>
+        <tbody id="quant-body"></tbody>
+      </table>
+    </section>
+
+    <section id="sim" class="tab-panel" role="tabpanel">
+      <h2>🎰 몬테카를로 시뮬레이션</h2>
+      <label>반복 시행 횟수
+        <input type="number" id="f-runs" min="100" step="100" value="5000" />
+      </label>
+      <div class="form-actions">
+        <button type="button" id="draw-btn" class="btn-ghost">단발 뽑기 🎯</button>
+        <button type="button" id="run-sim" class="btn-primary">시뮬 실행 ▶</button>
+      </div>
+      <div id="draw-result" class="draw-result"></div>
+      <div id="sim-summary" class="stat-cards"></div>
+      <div class="chart-box"><canvas id="hist-canvas"></canvas></div>
+      <p id="lln-note" class="lln-note"></p>
+    </section>
+
+    <section id="method" class="tab-panel" role="tabpanel">
+      <h2>📖 방법론</h2>
+      <h3>1. 여사건으로 보는 누적확률</h3>
+      <p>1회 확률 <em>p</em>일 때 <em>N</em>번 중 한 번도 못 얻을 확률은 <code>(1-p)<sup>N</sup></code>,
+        따라서 1개 이상 얻을 확률은 <code>1 - (1-p)<sup>N</sup></code>입니다. 여사건이 계산을 단순하게 만듭니다.</p>
+      <h3>2. 기댓값 (기하분포)</h3>
+      <p>매 시도가 독립이고 성공 확률이 <em>p</em>이면, 첫 성공까지 기대 시도 수는 <code>1/p</code>입니다.
+        ★5가 0.6%라면 평균 약 167번이 필요하다는 뜻이죠.</p>
+      <h3>3. 천장(pity) 시스템의 수학</h3>
+      <p>천장 <em>H</em>는 <em>H</em>번째에 목표를 보장합니다. 기댓값은
+        <code>Σ k·(1-p)<sup>k-1</sup>·p + H·(1-p)<sup>H-1</sup></code>로, 최악의 경우를 잘라내
+        기댓값과 분산을 모두 낮춥니다. 플레이어 불안을 줄이는 <strong>공정성 설계</strong>입니다.</p>
+      <h3>4. 몬테카를로와 큰 수의 법칙</h3>
+      <p>시드 난수로 수천~수만 번 뽑기를 시뮬레이션하면, 시뮬 평균이 이론 기댓값
+        <code>1/p</code>에 수렴합니다(큰 수의 법칙). 이론과 실험이 만나는 지점입니다.</p>
+      <h3>5. 게임 설계 관점</h3>
+      <p>확률은 게임의 보상·과금·동기를 설계하는 핵심 도구입니다. 확률 밸런싱, 천장의
+        체감 효과, 공정성과 사행성의 균형을 <strong>수학 모델로 의사결정</strong>하는 과정을 담았습니다.</p>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
