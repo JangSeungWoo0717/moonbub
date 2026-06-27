@@ -1,5 +1,5 @@
 // Canvas 렌더러 — 밝은 대낮 테마 + 파티클/잔상/화면흔들림 (DOM/Canvas 의존)
-import { WORLD } from "./levels.js";
+import { WORLD, previewMode } from "./levels.js";
 import { samplePathBounce, vertex, landingX } from "./physics.js";
 
 export class Renderer {
@@ -188,16 +188,25 @@ export class Renderer {
 
   drawAimPreview() {
     const ctx = this.ctx;
+    const mode = previewMode(this.level);
+    if (mode === "none") { this.drawAimArrow(); return; }
+
+    const limit = mode === "short" ? 4.5 : WORLD.W;
     const pts = samplePathBounce(this.a, this.b, WORLD.W, this.curveBounces(), this.curveRest(), 0.3);
     ctx.strokeStyle = "rgba(20,90,170,0.9)"; ctx.lineWidth = 3;
     ctx.setLineDash([8, 6]);
     ctx.beginPath();
-    pts.forEach((p, i) => {
+    let started = false;
+    for (const p of pts) {
+      if (p.x > limit) break;
       const px = this.X(p.x), py = this.Y(Math.max(p.y, 0));
-      if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
-    });
+      if (!started) { ctx.moveTo(px, py); started = true; } else ctx.lineTo(px, py);
+    }
     ctx.stroke();
     ctx.setLineDash([]);
+
+    if (mode !== "full") return; // 스텁만: 꼭짓점·착지 마커 숨김(난이도)
+
     const v = vertex(this.a, this.b);
     if (v && v.y > 0) {
       ctx.strokeStyle = "rgba(20,40,80,0.25)"; ctx.lineWidth = 1; ctx.setLineDash([3, 4]);
@@ -214,6 +223,23 @@ export class Renderer {
       ctx.beginPath(); ctx.moveTo(lx - 5, ly - 5); ctx.lineTo(lx + 5, ly + 5);
       ctx.moveTo(lx + 5, ly - 5); ctx.lineTo(lx - 5, ly + 5); ctx.stroke();
     }
+  }
+
+  // 미리보기 없음: 발사 방향(원점에서의 접선)만 짧은 화살표로
+  drawAimArrow() {
+    const ctx = this.ctx;
+    const ox = this.X(0), oy = this.Y(0);
+    const dx = 2.4;
+    const ex = this.X(dx), ey = this.Y(Math.max(this.b * dx, 0));
+    ctx.strokeStyle = "rgba(20,90,170,0.9)"; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(ex, ey); ctx.stroke();
+    const ang = Math.atan2(ey - oy, ex - ox);
+    ctx.fillStyle = "rgba(20,90,170,0.9)";
+    ctx.beginPath();
+    ctx.moveTo(ex, ey);
+    ctx.lineTo(ex - 9 * Math.cos(ang - 0.4), ey - 9 * Math.sin(ang - 0.4));
+    ctx.lineTo(ex - 9 * Math.cos(ang + 0.4), ey - 9 * Math.sin(ang + 0.4));
+    ctx.closePath(); ctx.fill();
   }
 
   drawCannon() {

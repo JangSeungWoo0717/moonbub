@@ -1,6 +1,6 @@
 import { createGame, currentLevel, fire, hasNext, nextLevel, goToLevel, totalStars } from "./game.js";
 import { vertex, landingX, firstHitIndex, velocityToCoeffs } from "./physics.js";
-import { WORLD, CONTROLS, GRAVITY, LEVELS } from "./levels.js";
+import { WORLD, CONTROLS, GRAVITY, LEVELS, previewMode } from "./levels.js";
 import { starGoals } from "./scoring.js";
 import { Renderer } from "./render.js";
 import { loadProgress, recordClear, setSound } from "./storage.js";
@@ -61,7 +61,10 @@ function setupLevel() {
   resetObjectives(lv);
   renderer.setLevel(lv);
   setAB((CONTROLS.aMin + CONTROLS.aMax) / 2, 1.5);
-  document.getElementById("hint").textContent = lv.hint;
+  const pm = previewMode(lv);
+  const note = pm === "none" ? "  🔒 궤적 숨김 — 꼭짓점·착지 x를 계산해 조준!"
+    : pm === "short" ? "  🔒 궤적 일부만 보여요 — 숫자를 활용!" : "";
+  document.getElementById("hint").textContent = lv.hint + note;
   document.getElementById("goals").textContent = "⭐ " + starGoals(lv).join("  ·  ");
   hideOverlay();
   updateHud();

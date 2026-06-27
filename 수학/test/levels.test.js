@@ -1,7 +1,17 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { LEVELS, WORLD, CONTROLS } from "../js/levels.js";
+import { LEVELS, WORLD, CONTROLS, previewMode } from "../js/levels.js";
 import { evaluateShot } from "../js/physics.js";
+
+test("previewMode: 난이도에 따라 궤적 미리보기 강도", () => {
+  assert.equal(previewMode({ id: 1 }), "full");
+  assert.equal(previewMode({ id: 3 }), "full");
+  assert.equal(previewMode({ id: 4 }), "short");
+  assert.equal(previewMode({ id: 9 }), "short");
+  assert.equal(previewMode({ id: 10 }), "none");
+  assert.equal(previewMode({ id: 12 }), "none");
+  assert.equal(previewMode({ id: 13, preview: "short" }), "short"); // 명시값 우선
+});
 
 test("15개 레벨, 필수 필드 보유", () => {
   assert.equal(LEVELS.length, 15);

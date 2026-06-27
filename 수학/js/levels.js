@@ -94,19 +94,19 @@ function build() {
     },
     // ===== 바운스 도입 =====
     {
-      id: 13, par: 3, bounces: 2, restitution: 0.6,
+      id: 13, par: 3, bounces: 2, restitution: 0.6, preview: "short",
       targets: [on(-0.18, 2.40, 17, 1.3, 2, 0.6)], coins: [], obstacles: [],
       hint: "🆕 공이 땅에서 튕겨요! 한 번 바운스한 뒤 표적을 노려요.",
     },
     {
-      id: 14, par: 3, bounces: 2, restitution: 0.65,
+      id: 14, par: 3, bounces: 2, restitution: 0.65, preview: "short",
       targets: [on(-0.15, 1.80, 16, 1.2, 2, 0.65)],
       coins: [on(-0.15, 1.80, 4, 0.8, 2, 0.65), on(-0.15, 1.80, 8, 0.8, 2, 0.65)],
       obstacles: [],
       hint: "첫 포물선에서 코인을 줍고, 바운스 후 표적까지!",
     },
     {
-      id: 15, par: 3, bounces: 3, restitution: 0.6,
+      id: 15, par: 3, bounces: 3, restitution: 0.6, preview: "short",
       targets: [on(-0.20, 2.60, 6, 1.1, 3, 0.6), on(-0.20, 2.60, 17, 1.1, 3, 0.6)],
       coins: [on(-0.20, 2.60, 3, 0.8, 3, 0.6)],
       obstacles: [],
@@ -116,3 +116,11 @@ function build() {
 }
 
 export const LEVELS = build();
+
+// 궤적 미리보기 강도(난이도): full(전체) | short(발사 스텁) | none(화살표만)
+export function previewMode(level) {
+  if (level.preview) return level.preview;
+  if (level.id <= 3) return "full";
+  if (level.id <= 9) return "short";
+  return "none";
+}
