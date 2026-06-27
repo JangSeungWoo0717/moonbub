@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { loadConfig, saveConfig, clearConfig } from "../js/storage.js";
+import { loadProgress, saveProgress, recordClear, clearProgress } from "../js/storage.js";
 
 function makeStore() {
   const m = new Map();
@@ -11,28 +11,32 @@ function makeStore() {
   };
 }
 
-test("빈 저장소는 기본 설정 반환", () => {
-  const c = loadConfig(makeStore());
-  assert.equal(c.rarities.length, 2);
+test("빈 저장소는 cleared 빈 객체", () => {
+  assert.deepEqual(loadProgress(makeStore()), { cleared: {} });
 });
 
-test("saveConfig/loadConfig 왕복", () => {
+test("recordClear: 별점 저장 및 조회", () => {
   const s = makeStore();
-  saveConfig({ rarities: [{ name: "A", p: 0.2, color: "#fff" }], targetIndex: 0, pity: 50, costPerDraw: 100 }, s);
-  const c = loadConfig(s);
-  assert.equal(c.pity, 50);
-  assert.equal(c.rarities[0].p, 0.2);
+  recordClear(1, 2, s);
+  assert.equal(loadProgress(s).cleared[1], 2);
+});
+
+test("recordClear: 더 낮은 별점은 무시(최고 유지)", () => {
+  const s = makeStore();
+  recordClear(1, 3, s);
+  recordClear(1, 1, s);
+  assert.equal(loadProgress(s).cleared[1], 3);
 });
 
 test("손상된 JSON은 기본값으로 복구", () => {
   const s = makeStore();
-  s.setItem("gachalab_config", "{broken");
-  assert.equal(loadConfig(s).rarities.length, 2);
+  s.setItem("parabola_progress", "{broken");
+  assert.deepEqual(loadProgress(s), { cleared: {} });
 });
 
-test("clearConfig 후 기본값", () => {
+test("clearProgress 후 초기화", () => {
   const s = makeStore();
-  saveConfig({ pity: 10 }, s);
-  clearConfig(s);
-  assert.equal(loadConfig(s).pity, 90);
+  recordClear(2, 3, s);
+  clearProgress(s);
+  assert.deepEqual(loadProgress(s), { cleared: {} });
 });

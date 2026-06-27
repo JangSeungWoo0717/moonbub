@@ -1,7 +1,7 @@
 {
-  "name": "gachalab",
+  "name": "parabolashot",
   "version": "1.0.0",
-  "description": "확률의 설계자 - 가챠 확률 실험실",
+  "description": "포물선 슈터 - 이차함수 조준 게임",
   "type": "module",
   "scripts": {
     "test": "node --test"
