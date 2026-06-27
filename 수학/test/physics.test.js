@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   trajectoryY, vertex, landingX, velocityToCoeffs, samplePath,
+  samplePathBounce, pointOnPathBounce, bounceSegments,
   firstHitIndex, hitsCircle, hitsObstacle, evaluateShot,
 } from "../js/physics.js";
 
@@ -42,6 +43,28 @@ test("hitsObstacle: 사각형 통과 판정", () => {
   const pts = samplePath(-1, 2, 100, 0.1);
   assert.ok(hitsObstacle(pts, { x: 0.8, w: 0.4, bottom: 0, top: 1.2 }));
   assert.ok(!hitsObstacle(pts, { x: 0.8, w: 0.4, bottom: 4, top: 5 }));
+});
+
+test("bounceSegments: 바운스마다 길이가 e배(등비수열)", () => {
+  const segs = bounceSegments(-0.2, 2, 100, 2, 0.5);
+  assert.equal(segs.length, 3);
+  const L0 = segs[0].end - segs[0].x0; // 첫 착지거리 = -b/a = 10
+  const L1 = segs[1].end - segs[1].x0;
+  assert.ok(close(L0, 10));
+  assert.ok(close(L1, 5)); // 0.5배
+});
+
+test("samplePathBounce: 두 번째 아치 봉우리는 첫 봉우리의 e²배", () => {
+  const a = -0.2, b = 2, e = 0.5;
+  const pts = samplePathBounce(a, b, 100, 1, e, 0.05);
+  const peak1 = Math.max(...pts.filter((p) => p.x < 10).map((p) => p.y));
+  const peak2 = Math.max(...pts.filter((p) => p.x > 10).map((p) => p.y));
+  assert.ok(close(peak2 / peak1, e * e, 0.02));
+});
+
+test("pointOnPathBounce: 바운스 경로 위 높이", () => {
+  // 첫 착지 x=10 에서 y=0
+  assert.ok(close(pointOnPathBounce(-0.2, 2, 10, 2, 0.5), 0, 1e-6));
 });
 
 test("evaluateShot: 다중 표적 + 코인 + 장애물", () => {

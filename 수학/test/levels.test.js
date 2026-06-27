@@ -3,8 +3,8 @@ import assert from "node:assert/strict";
 import { LEVELS, WORLD, CONTROLS } from "../js/levels.js";
 import { evaluateShot } from "../js/physics.js";
 
-test("12개 레벨, 필수 필드 보유", () => {
-  assert.equal(LEVELS.length, 12);
+test("15개 레벨, 필수 필드 보유", () => {
+  assert.equal(LEVELS.length, 15);
   for (const lv of LEVELS) {
     assert.equal(typeof lv.id, "number");
     assert.ok(Array.isArray(lv.targets) && lv.targets.length >= 1);

@@ -43,7 +43,7 @@ test("nextLevel / hasNext / goToLevel / totalStars", () => {
   assert.ok(hasNext(g));
   assert.ok(nextLevel(g));
   assert.equal(g.index, 1);
-  assert.ok(goToLevel(g, 11));
+  assert.ok(goToLevel(g, 14));
   assert.ok(!hasNext(g));
   g.stars = { 1: 3, 2: 2 };
   assert.equal(totalStars(g), 5);

@@ -1,6 +1,6 @@
-// Canvas 렌더러 — 연속 rAF 루프 + 파티클/잔상/화면흔들림 (DOM/Canvas 의존)
+// Canvas 렌더러 — 밝은 대낮 테마 + 파티클/잔상/화면흔들림 (DOM/Canvas 의존)
 import { WORLD } from "./levels.js";
-import { samplePath, vertex, landingX } from "./physics.js";
+import { samplePathBounce, vertex, landingX } from "./physics.js";
 
 export class Renderer {
   constructor(canvas) {
@@ -19,6 +19,9 @@ export class Renderer {
     this.trail = [];
     this.shakeAmt = 0;
     this.t = 0;
+    this.clouds = [
+      { x: 4, y: 11.5, s: 1.0 }, { x: 13, y: 12.6, s: 1.3 }, { x: 20, y: 11, s: 0.9 },
+    ];
     this._raf = null;
   }
 
@@ -32,7 +35,6 @@ export class Renderer {
 
   setLevel(level) { this.level = level; this.particles = []; this.trail = []; this.shot = null; this.mode = "aim"; }
   setAim(a, b) { this.a = a; this.b = b; }
-
   shake(amt) { this.shakeAmt = Math.min(this.shakeAmt + amt, 16); }
 
   burst(x, y, color, n = 18, speed = 5) {
@@ -47,12 +49,14 @@ export class Renderer {
     }
   }
 
-  // 발사 시작: points(월드), events:[{index,type,color,x,y}], 콜백
   shoot(points, events, onEvent, onDone) {
     this.shot = { points, events: events.slice(), idx: 0, onEvent, onDone, fired: new Set() };
     this.trail = [];
     this.mode = "shoot";
   }
+
+  curveBounces() { return this.level ? (this.level.bounces || 0) : 0; }
+  curveRest() { return this.level ? (this.level.restitution || 0) : 0; }
 
   frame() {
     const ctx = this.ctx;
@@ -77,26 +81,52 @@ export class Renderer {
 
   drawBackground() {
     const ctx = this.ctx;
-    const g = ctx.createLinearGradient(0, 0, 0, this.H);
-    g.addColorStop(0, "#141a3a");
-    g.addColorStop(0.7, "#0f1226");
-    g.addColorStop(1, "#0b0e1f");
-    ctx.fillStyle = g;
-    ctx.fillRect(-20, -20, this.W + 40, this.H + 40);
-    // 격자
-    ctx.strokeStyle = "rgba(91,140,255,0.08)";
-    ctx.lineWidth = 1;
+    // 하늘
+    const sky = ctx.createLinearGradient(0, 0, 0, this.Y(0));
+    sky.addColorStop(0, "#8fd3ff");
+    sky.addColorStop(1, "#dff3ff");
+    ctx.fillStyle = sky;
+    ctx.fillRect(-20, -20, this.W + 40, this.Y(0) + 20);
+    // 해
+    const sunX = this.X(1.5), sunY = this.Y(WORLD.H - 0.5);
+    const sg = ctx.createRadialGradient(sunX, sunY, 4, sunX, sunY, 34);
+    sg.addColorStop(0, "rgba(255,238,150,0.95)");
+    sg.addColorStop(1, "rgba(255,238,150,0)");
+    ctx.fillStyle = sg;
+    ctx.beginPath(); ctx.arc(sunX, sunY, 34, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#ffe46b";
+    ctx.beginPath(); ctx.arc(sunX, sunY, 15, 0, Math.PI * 2); ctx.fill();
+    // 구름 (천천히 흐름)
+    for (const c of this.clouds) {
+      const cx = this.X((c.x + this.t * 0.004) % (WORLD.W + 4));
+      this.drawCloud(cx, this.Y(c.y), c.s);
+    }
+    // 옅은 격자
+    ctx.strokeStyle = "rgba(70,110,170,0.10)"; ctx.lineWidth = 1;
     for (let x = 0; x <= WORLD.W; x += 2) {
       ctx.beginPath(); ctx.moveTo(this.X(x), this.Y(0)); ctx.lineTo(this.X(x), this.Y(WORLD.H)); ctx.stroke();
     }
     for (let y = 0; y <= WORLD.H; y += 2) {
       ctx.beginPath(); ctx.moveTo(this.X(0), this.Y(y)); ctx.lineTo(this.X(WORLD.W), this.Y(y)); ctx.stroke();
     }
-    // 땅
-    ctx.fillStyle = "#1c2342";
-    ctx.fillRect(0, this.Y(0), this.W, this.H - this.Y(0) + 20);
-    ctx.strokeStyle = "#3a4170"; ctx.lineWidth = 2;
+    // 잔디 땅
+    const grass = ctx.createLinearGradient(0, this.Y(0), 0, this.H);
+    grass.addColorStop(0, "#8ed455");
+    grass.addColorStop(1, "#5fa831");
+    ctx.fillStyle = grass;
+    ctx.fillRect(-20, this.Y(0), this.W + 40, this.H - this.Y(0) + 20);
+    ctx.strokeStyle = "#3f8a22"; ctx.lineWidth = 3;
     ctx.beginPath(); ctx.moveTo(0, this.Y(0)); ctx.lineTo(this.W, this.Y(0)); ctx.stroke();
+  }
+
+  drawCloud(cx, cy, s) {
+    const ctx = this.ctx;
+    ctx.fillStyle = "rgba(255,255,255,0.9)";
+    ctx.beginPath();
+    ctx.arc(cx, cy, 12 * s, 0, Math.PI * 2);
+    ctx.arc(cx + 13 * s, cy + 3 * s, 9 * s, 0, Math.PI * 2);
+    ctx.arc(cx - 13 * s, cy + 3 * s, 9 * s, 0, Math.PI * 2);
+    ctx.fill();
   }
 
   drawObstacles() {
@@ -104,12 +134,11 @@ export class Renderer {
     for (const o of this.level.obstacles) {
       const x = this.X(o.x), y = this.Y(o.top);
       const w = o.w * this.sx, h = (o.top - o.bottom) * this.sy;
-      ctx.fillStyle = "#7a3b52";
+      ctx.fillStyle = "#9c7b54";
       this.roundRect(x, y, w, h, 4); ctx.fill();
-      ctx.strokeStyle = "#ff8aa0"; ctx.lineWidth = 2;
+      ctx.strokeStyle = "#6f5536"; ctx.lineWidth = 2;
       this.roundRect(x, y, w, h, 4); ctx.stroke();
-      // 벽돌 줄
-      ctx.strokeStyle = "rgba(0,0,0,0.25)"; ctx.lineWidth = 1;
+      ctx.strokeStyle = "rgba(0,0,0,0.18)"; ctx.lineWidth = 1;
       for (let yy = y + 8; yy < y + h; yy += 9) {
         ctx.beginPath(); ctx.moveTo(x, yy); ctx.lineTo(x + w, yy); ctx.stroke();
       }
@@ -124,12 +153,14 @@ export class Renderer {
       const r = c.r * this.sx * 0.7;
       const spin = Math.abs(Math.cos(this.t * 0.06 + c.x));
       ctx.save();
-      ctx.shadowColor = "#ffcf3f"; ctx.shadowBlur = 12;
+      ctx.shadowColor = "rgba(255,180,0,0.7)"; ctx.shadowBlur = 10;
       ctx.fillStyle = "#ffcf3f";
       ctx.beginPath(); ctx.ellipse(cx, cy, r * (0.3 + 0.7 * spin), r, 0, 0, Math.PI * 2); ctx.fill();
       ctx.shadowBlur = 0;
-      ctx.strokeStyle = "#fff3c4"; ctx.lineWidth = 2;
+      ctx.strokeStyle = "#b8860b"; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.ellipse(cx, cy, r * (0.3 + 0.7 * spin), r, 0, 0, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = "#fff6cc";
+      ctx.beginPath(); ctx.arc(cx - r * 0.3 * spin, cy - r * 0.3, r * 0.18, 0, Math.PI * 2); ctx.fill();
       ctx.restore();
     }
   }
@@ -141,27 +172,25 @@ export class Renderer {
       const cx = this.X(t.x), cy = this.Y(t.y);
       const pulse = 1 + 0.08 * Math.sin(this.t * 0.12 + t.x);
       const r = t.r * this.sx * pulse;
-      // 풍선 줄
-      ctx.strokeStyle = "rgba(255,255,255,0.3)"; ctx.lineWidth = 1.5;
+      ctx.strokeStyle = "rgba(60,80,120,0.35)"; ctx.lineWidth = 1.5;
       ctx.beginPath(); ctx.moveTo(cx, cy + r); ctx.lineTo(cx, this.Y(0)); ctx.stroke();
       ctx.save();
-      ctx.shadowColor = "#ff6b6b"; ctx.shadowBlur = 16;
+      ctx.shadowColor = "rgba(255,70,90,0.5)"; ctx.shadowBlur = 14;
       const g = ctx.createRadialGradient(cx - r * 0.3, cy - r * 0.3, r * 0.2, cx, cy, r);
-      g.addColorStop(0, "#ff9aa8"); g.addColorStop(1, "#ff4d62");
+      g.addColorStop(0, "#ff9aa8"); g.addColorStop(1, "#ee2f48");
       ctx.fillStyle = g;
       ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
       ctx.restore();
-      // 하이라이트
-      ctx.fillStyle = "rgba(255,255,255,0.6)";
+      ctx.fillStyle = "rgba(255,255,255,0.7)";
       ctx.beginPath(); ctx.arc(cx - r * 0.32, cy - r * 0.32, r * 0.18, 0, Math.PI * 2); ctx.fill();
     }
   }
 
   drawAimPreview() {
     const ctx = this.ctx;
-    const pts = samplePath(this.a, this.b, WORLD.W, 0.3);
-    ctx.strokeStyle = "rgba(0,212,160,0.85)"; ctx.lineWidth = 2.5;
-    ctx.setLineDash([7, 6]);
+    const pts = samplePathBounce(this.a, this.b, WORLD.W, this.curveBounces(), this.curveRest(), 0.3);
+    ctx.strokeStyle = "rgba(20,90,170,0.9)"; ctx.lineWidth = 3;
+    ctx.setLineDash([8, 6]);
     ctx.beginPath();
     pts.forEach((p, i) => {
       const px = this.X(p.x), py = this.Y(Math.max(p.y, 0));
@@ -169,21 +198,19 @@ export class Renderer {
     });
     ctx.stroke();
     ctx.setLineDash([]);
-    // 꼭짓점 + 대칭축
     const v = vertex(this.a, this.b);
     if (v && v.y > 0) {
-      ctx.strokeStyle = "rgba(255,255,255,0.18)"; ctx.lineWidth = 1; ctx.setLineDash([3, 4]);
+      ctx.strokeStyle = "rgba(20,40,80,0.25)"; ctx.lineWidth = 1; ctx.setLineDash([3, 4]);
       ctx.beginPath(); ctx.moveTo(this.X(v.x), this.Y(0)); ctx.lineTo(this.X(v.x), this.Y(v.y)); ctx.stroke();
       ctx.setLineDash([]);
-      ctx.fillStyle = "#00d4a0";
+      ctx.fillStyle = "#0b5fb0";
       const vx = this.X(v.x), vy = this.Y(v.y);
       ctx.beginPath(); ctx.moveTo(vx, vy - 5); ctx.lineTo(vx + 5, vy); ctx.lineTo(vx, vy + 5); ctx.lineTo(vx - 5, vy); ctx.closePath(); ctx.fill();
     }
-    // 착지 마커
     const land = landingX(this.a, this.b);
-    if (land != null && land <= WORLD.W) {
+    if (land != null && land <= WORLD.W && this.curveBounces() === 0) {
       const lx = this.X(land), ly = this.Y(0);
-      ctx.strokeStyle = "#ffcf3f"; ctx.lineWidth = 2;
+      ctx.strokeStyle = "#d62828"; ctx.lineWidth = 2.5;
       ctx.beginPath(); ctx.moveTo(lx - 5, ly - 5); ctx.lineTo(lx + 5, ly + 5);
       ctx.moveTo(lx + 5, ly - 5); ctx.lineTo(lx - 5, ly + 5); ctx.stroke();
     }
@@ -196,13 +223,13 @@ export class Renderer {
     ctx.save();
     ctx.translate(ox, oy);
     ctx.rotate(ang);
-    ctx.fillStyle = "#5b8cff";
+    ctx.fillStyle = "#3b4a6b";
     this.roundRect(-2, -7, 30, 14, 5); ctx.fill();
-    ctx.fillStyle = "#7da3ff";
+    ctx.fillStyle = "#5b8cff";
     this.roundRect(20, -7, 8, 14, 4); ctx.fill();
     ctx.restore();
-    ctx.fillStyle = "#3a4170";
-    ctx.beginPath(); ctx.arc(ox, oy, 11, Math.PI, 0); ctx.fill();
+    ctx.fillStyle = "#2c3550";
+    ctx.beginPath(); ctx.arc(ox, oy, 12, Math.PI, 0); ctx.fill();
     ctx.fillStyle = "#5b8cff";
     ctx.beginPath(); ctx.arc(ox, oy, 7, 0, Math.PI * 2); ctx.fill();
   }
@@ -211,7 +238,6 @@ export class Renderer {
     const ctx = this.ctx;
     const s = this.shot;
     const end = s.points.length - 1;
-    // 이벤트 발화
     for (const ev of s.events) {
       if (!s.fired.has(ev) && s.idx >= ev.index) {
         s.fired.add(ev);
@@ -222,8 +248,7 @@ export class Renderer {
     }
     const p = s.points[Math.min(s.idx, end)];
     const px = this.X(p.x), py = this.Y(Math.max(p.y, 0));
-    // 지나온 궤적
-    ctx.strokeStyle = "rgba(0,212,160,0.5)"; ctx.lineWidth = 2; ctx.setLineDash([6, 5]);
+    ctx.strokeStyle = "rgba(20,90,170,0.55)"; ctx.lineWidth = 2.5; ctx.setLineDash([7, 5]);
     ctx.beginPath();
     for (let i = 0; i <= Math.min(s.idx, end); i += 1) {
       const q = s.points[i];
@@ -231,20 +256,20 @@ export class Renderer {
       if (i === 0) ctx.moveTo(qx, qy); else ctx.lineTo(qx, qy);
     }
     ctx.stroke(); ctx.setLineDash([]);
-    // 잔상
     this.trail.push({ x: px, y: py });
     if (this.trail.length > 14) this.trail.shift();
     this.trail.forEach((tp, i) => {
       const al = i / this.trail.length;
-      ctx.fillStyle = `rgba(255,255,255,${al * 0.4})`;
+      ctx.fillStyle = `rgba(255,120,40,${al * 0.4})`;
       ctx.beginPath(); ctx.arc(tp.x, tp.y, 5 * al, 0, Math.PI * 2); ctx.fill();
     });
-    // 공
     ctx.save();
-    ctx.shadowColor = "#fff"; ctx.shadowBlur = 14;
-    ctx.fillStyle = "#ffffff";
-    ctx.beginPath(); ctx.arc(px, py, 6, 0, Math.PI * 2); ctx.fill();
+    ctx.shadowColor = "rgba(255,140,40,0.9)"; ctx.shadowBlur = 14;
+    ctx.fillStyle = "#ff6b35";
+    ctx.beginPath(); ctx.arc(px, py, 7, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
+    ctx.strokeStyle = "#fff"; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(px, py, 7, 0, Math.PI * 2); ctx.stroke();
 
     s.idx += 1;
     if (s.idx > end) {
@@ -277,7 +302,6 @@ export class Renderer {
     ctx.closePath();
   }
 
-  // 캔버스 좌표(px) → 월드 좌표
   toWorld(px, py) {
     return { x: (px - this.pad) / this.sx, y: (this.H - this.pad - py) / this.sy };
   }

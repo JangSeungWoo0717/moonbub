@@ -21,7 +21,7 @@ export function currentLevel(state) {
 export function fire(state, a, b) {
   const level = currentLevel(state);
   state.attempts += 1;
-  const result = evaluateShot(a, b, level, WORLD.W, 0.4);
+  const result = evaluateShot(a, b, level, WORLD.W, 0.2);
   if (result.allHit) {
     state.status = "won";
     const stars = computeStars({
