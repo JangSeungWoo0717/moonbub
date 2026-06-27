@@ -81,21 +81,21 @@ export class Renderer {
 
   drawBackground() {
     const ctx = this.ctx;
-    // 하늘
+    // 하늘 (밝은 대낮)
     const sky = ctx.createLinearGradient(0, 0, 0, this.Y(0));
-    sky.addColorStop(0, "#8fd3ff");
-    sky.addColorStop(1, "#dff3ff");
+    sky.addColorStop(0, "#56b8f5");
+    sky.addColorStop(1, "#c8edff");
     ctx.fillStyle = sky;
     ctx.fillRect(-20, -20, this.W + 40, this.Y(0) + 20);
     // 해
     const sunX = this.X(1.5), sunY = this.Y(WORLD.H - 0.5);
-    const sg = ctx.createRadialGradient(sunX, sunY, 4, sunX, sunY, 34);
-    sg.addColorStop(0, "rgba(255,238,150,0.95)");
-    sg.addColorStop(1, "rgba(255,238,150,0)");
+    const sg = ctx.createRadialGradient(sunX, sunY, 6, sunX, sunY, 44);
+    sg.addColorStop(0, "rgba(255,244,170,0.95)");
+    sg.addColorStop(1, "rgba(255,244,170,0)");
     ctx.fillStyle = sg;
-    ctx.beginPath(); ctx.arc(sunX, sunY, 34, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = "#ffe46b";
-    ctx.beginPath(); ctx.arc(sunX, sunY, 15, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(sunX, sunY, 44, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#fff04a";
+    ctx.beginPath(); ctx.arc(sunX, sunY, 17, 0, Math.PI * 2); ctx.fill();
     // 구름 (천천히 흐름)
     for (const c of this.clouds) {
       const cx = this.X((c.x + this.t * 0.004) % (WORLD.W + 4));
