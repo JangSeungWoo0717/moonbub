@@ -1,0 +1,10 @@
+{
+  "name": "gachalab",
+  "version": "1.0.0",
+  "description": "확률의 설계자 - 가챠 확률 실험실",
+  "type": "module",
+  "scripts": {
+    "test": "node --test"
+  },
+  "license": "MIT"
+}
